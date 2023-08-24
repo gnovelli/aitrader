@@ -1,17 +1,31 @@
 import json
 import websocket
 
+# Definizione del decoratore
+from managers.DatabaseManager import DatabaseManager
+
 class BinanceMonitor:
 
-    def __init__(self, crypto_list):
+    def __init__(self, crypto_list, db_manager):
         self.crypto_list = crypto_list
         streams = "/".join(self.generate_streams(crypto_list))
         self.websocket_url = f"wss://stream.binance.com:9443/ws/{streams}"
+        self.db_manager = db_manager
 
     def generate_streams(self, crypto_pairs):
         """Genera una lista degli stream basata sulle coppie di criptovalute"""
         return [f"{pair}@ticker" for pair in crypto_pairs]
 
+    # Definizione del decoratore
+    def record_data(func):
+        def wrapper(self, ws, message):
+            data = json.loads(message)
+            # Utilizza l'istanza di DatabaseManager già presente nell'oggetto
+            self.db_manager.insert_data(data)
+            return func(self, ws, message)
+        return wrapper
+
+    @record_data
     def on_message(self, ws, message):
         data = json.loads(message)
         print(data)
@@ -41,5 +55,6 @@ class BinanceMonitor:
 if __name__ == "__main__":
     # Lista delle coppie di criptovalute da monitorare
     crypto_list = ["ethbtc", "btcusdt", "xrpbtc"]
-    monitor = BinanceMonitor(crypto_list)
+    db = DatabaseManager('binance.db')
+    monitor = BinanceMonitor(crypto_list, db)
     monitor.run()
