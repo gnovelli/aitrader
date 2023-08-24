@@ -21,17 +21,23 @@ class BinanceMonitor:
         def wrapper(self, ws, message):
             data = json.loads(message)
             # Utilizza l'istanza di DatabaseManager già presente nell'oggetto
-            self.db_manager.insert_data(data)
+            if 'e' in data:
+                self.db_manager.insert_data(data)
             return func(self, ws, message)
         return wrapper
 
     @record_data
     def on_message(self, ws, message):
         data = json.loads(message)
-        print(data)
+        if 'e' in data:
+            print(data)
 
     def on_error(self, ws, error):
+        print(type(error))
         print(f"Error: {error}")
+        print(f"Error args: {error.args}")
+        import traceback
+        traceback.print_exc()
 
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###")
