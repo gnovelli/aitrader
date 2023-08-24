@@ -1,7 +1,6 @@
 import json
 import websocket
 
-
 class BinanceMonitor:
 
     def __init__(self, crypto_list):
