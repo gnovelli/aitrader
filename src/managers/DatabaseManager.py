@@ -93,7 +93,7 @@ class DatabaseManager:
 
     def fetch_dataframe(self, symbol=None):
         records = self.fetch_data(symbol=symbol)
-        df = db.records_to_dataframe(records)
+        df = self.records_to_dataframe(records)
         return df
 
     def close(self):
