@@ -3,7 +3,11 @@ import pandas as pd
 import threading
 
 class DatabaseManager:
+    """
+    Classe DatabaseManager per gestire la connessione e le operazioni con un database SQLite.
+    """
 
+    # Mappa che traduce le chiavi dei dati ricevuti in nomi di campo più descrittivi per il database.
     FIELD_MAPPING = {
         'e': 'event_type',
         'E': 'event_time',
@@ -31,6 +35,11 @@ class DatabaseManager:
     }
 
     def __init__(self, db_path=':memory:'):
+        """
+        Inizializza la connessione al database e crea la tabella se non esiste.
+
+        :param db_path: Percorso del database. Di default, utilizza la memoria.
+        """
         # Connessione al database
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
@@ -40,6 +49,9 @@ class DatabaseManager:
         self.create_table()
 
     def create_table(self):
+        """
+        Crea una tabella nel database se non esiste già.
+        """
         columns = ', '.join([f"{v} TEXT" for v in self.FIELD_MAPPING.values()])
         with self.lock:
             self.cursor.execute(f'''
@@ -50,6 +62,11 @@ class DatabaseManager:
             ''')
 
     def insert_data(self, data):
+        """
+        Inserisce i dati nella tabella.
+
+        :param data: Dizionario contenente i dati da inserire.
+        """
         keys = ', '.join(self.FIELD_MAPPING.values())
         placeholders = ', '.join(['?'] * len(self.FIELD_MAPPING))
         values = [data[k] for k in self.FIELD_MAPPING.keys()]
@@ -61,7 +78,12 @@ class DatabaseManager:
             self.conn.commit()
 
     def fetch_data(self, symbol=None):
-        """Recupera dati dal database. Se viene fornito un simbolo, filtra per quella coppia di valute."""
+        """
+        Recupera i dati dalla tabella. Se viene fornito un simbolo, filtra per quella coppia di valute.
+
+        :param symbol: (Opzionale) Simbolo della coppia di valute da filtrare.
+        :return: Lista di tuple contenente i dati recuperati.
+        """
         query = "SELECT * FROM binance_data"
         params = ()
 
@@ -74,8 +96,12 @@ class DatabaseManager:
 
     def records_to_dataframe(self,
                              records):
-        """Trasforma una lista di record in un DataFrame di pandas."""
+        """
+        Converte una lista di record in un DataFrame di pandas.
 
+        :param records: Lista di tuple contenente i dati.
+        :return: DataFrame di pandas.
+        """
         # Lista dei nomi dei campi (colonne) in base all'ordine in cui sono inseriti nel database
         columns = [
             'id','event_type', 'event_time', 'symbol', 'price_change', 'price_change_percent',
@@ -92,11 +118,20 @@ class DatabaseManager:
         return df
 
     def fetch_dataframe(self, symbol=None):
+        """
+        Recupera i dati dalla tabella e li restituisce come DataFrame.
+
+        :param symbol: (Opzionale) Simbolo della coppia di valute da filtrare.
+        :return: DataFrame di pandas.
+        """
         records = self.fetch_data(symbol=symbol)
         df = self.records_to_dataframe(records)
         return df
 
     def close(self):
+        """
+        Chiude la connessione al database.
+        """
         with self.lock:
             self.conn.close()
 
