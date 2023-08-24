@@ -1,0 +1,2 @@
+# aitrader
+AITRADER
