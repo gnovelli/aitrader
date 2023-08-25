@@ -1,7 +1,5 @@
 import json
 import websocket
-
-# Definizione del decoratore
 from managers.DatabaseManager import DatabaseManager
 
 class BinanceMonitor:
@@ -29,23 +27,17 @@ class BinanceMonitor:
         """
         return [f"{pair}@ticker" for pair in crypto_pairs]
 
-    # Definizione del decoratore
-    def record_data(func):
+    def record_data(self, ws, message):
         """
-        Decoratore che registra i dati ricevuti nel database.
+        Funzione che registra i dati ricevuti nel database.
 
-        :param func: Funzione da decorare.
-        :return: Funzione decorata.
+        :param ws: Istanza WebSocket.
+        :param message: Messaggio ricevuto.
         """
-        def wrapper(self, ws, message):
-            data = json.loads(message)
-            # Utilizza l'istanza di DatabaseManager già presente nell'oggetto
-            if 'e' in data:
-                self.db_manager.insert_data(data)
-            return func(self, ws, message)
-        return wrapper
+        data = json.loads(message)
+        if 'e' in data:
+            self.db_manager.insert_data(data)
 
-    @record_data
     def on_message(self, ws, message):
         """
         Gestisce i messaggi ricevuti dal WebSocket.
@@ -53,6 +45,7 @@ class BinanceMonitor:
         :param ws: Istanza WebSocket.
         :param message: Messaggio ricevuto.
         """
+        self.record_data(ws, message)  # Chiamata alla funzione di registrazione dei dati
         data = json.loads(message)
         if 'e' in data:
             print(data)

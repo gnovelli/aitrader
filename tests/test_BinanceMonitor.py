@@ -1,36 +1,34 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from src.monitors.BinanceMonitor import BinanceMonitor
+import json
 
 class TestBinanceMonitor(unittest.TestCase):
 
-    @patch('src.monitors.BinanceMonitor.BinanceMonitor.websocket.WebSocketApp')
-    @patch('src.managers.DatabaseManager.DatabaseManager.insert_data')
-    def test_on_message(self, mock_insert_data, mock_websocket):
-        # Creazione di mock data
-        mock_message = json.dumps({"e": "some_event", "data": "some_data"})
+    def setUp(self):
+        # Creiamo un mock per DatabaseManager per evitare interazioni reali con il database
+        self.mock_db_manager = MagicMock()
+        self.crypto_list = ["ethbtc", "btcusdt", "xrpbtc"]
+        self.monitor = BinanceMonitor(self.crypto_list, self.mock_db_manager)
 
-        crypto_list = ["ethbtc"]
-        db = MagicMock()  # Mocking del DatabaseManager
-        monitor = BinanceMonitor(crypto_list, db)
+    def test_generate_streams(self):
+        expected_streams = ["ethbtc@ticker", "btcusdt@ticker", "xrpbtc@ticker"]
+        self.assertEqual(self.monitor.generate_streams(self.crypto_list), expected_streams)
 
-        # Chiamata della funzione
-        monitor.on_message(None, mock_message)
+    def test_record_data_with_event(self):
+        mock_ws = MagicMock()
+        message = json.dumps({'e': 'event', 'other_key': 'value'})
+        self.monitor.record_data(mock_ws, message)
+        self.mock_db_manager.insert_data.assert_called_once_with(json.loads(message))
 
-        # Verifica che insert_data sia stato chiamato
-        mock_insert_data.assert_called_once_with({"e": "some_event", "data": "some_data"})
+    def test_record_data_without_event(self):
+        mock_ws = MagicMock()
+        message = json.dumps({'other_key': 'value'})
+        self.monitor.record_data(mock_ws, message)
+        self.mock_db_manager.insert_data.assert_not_called()
 
-    @patch('src.monitors.BinanceMonitor.BinanceMonitor.websocket.WebSocketApp')
-    @patch('src.managers.DatabaseManager.DatabaseManager.insert_data')
-    def test_generate_streams(self, mock_insert_data, mock_websocket):
-        crypto_list = ["ethbtc", "btcusdt"]
-        db = MagicMock()
-        monitor = BinanceMonitor(crypto_list, db)
-
-        expected_streams = ["ethbtc@ticker", "btcusdt@ticker"]
-        self.assertListEqual(monitor.generate_streams(crypto_list), expected_streams)
-
-    # Altri test possono essere scritti per on_error, on_close, ecc.
+    # Altri test possono essere aggiunti per on_message, on_error, on_close, on_open, ecc.
+    # Tuttavia, questi metodi potrebbero richiedere l'uso di mock per simulare il comportamento di WebSocket e altre interazioni esterne.
 
 if __name__ == "__main__":
     unittest.main()
