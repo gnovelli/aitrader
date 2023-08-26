@@ -1,10 +1,13 @@
 class PortfolioManager:
-    def __init__(self):
+    def __init__(self, initial_cash = 0):
         # Inizializza un dizionario vuoto per le crypto pairs. La chiave è la sigla della criptovaluta, e il valore è la quantità.
         self.crypto_portfolio = {}
 
         # Inizializza il contante a disposizione.
-        self.cash = 0.0
+        self.cash = initial_cash
+        # Aggiungi attributi per tracciare le commissioni e l'importo speso in criptovalute
+        self.total_fees = 0
+        self.total_spent_on_crypto = 0
 
     def add_crypto(self, symbol, amount):
         """
@@ -31,6 +34,22 @@ class PortfolioManager:
                 raise ValueError(f"Quantità insufficiente di {symbol} nel portafoglio.")
         else:
             raise ValueError(f"{symbol} non presente nel portafoglio.")
+
+    def add_fee(self, fee):
+        """
+        Aggiunge la commissione al totale delle commissioni spese.
+
+        :param fee: Importo della commissione.
+        """
+        self.total_fees += fee
+
+    def add_spent_on_crypto(self, amount):
+        """
+        Aggiunge l'importo speso in criptovalute al totale speso.
+
+        :param amount: Importo speso.
+        """
+        self.total_spent_on_crypto += amount
 
     def add_cash(self, amount):
         """
@@ -87,6 +106,8 @@ class PortfolioManager:
         """
         print("---- PORTAFOLIO RIEPILOGO ----")
         print(f"CASH: ${self.cash:.2f}")
+        print(f"CASH SPENT ON FEEs: ${self.total_fees:.2f}")
+        print(f"CASH SPENT ON CRYPTOs: ${self.total_spent_on_crypto:.2f}")
 
         crypto_total_value = 0.0
 
@@ -105,10 +126,9 @@ class PortfolioManager:
 
 if __name__ == "__main__":
     # Test della classe
-    portfolio = PortfolioManager()
+    portfolio = PortfolioManager(initial_cash=1000000)
     portfolio.add_crypto("BTC", 1)
     portfolio.add_crypto("ETH", 5)
-    portfolio.add_cash(1000.0)
 
     # Supponiamo che il prezzo corrente del BTC sia $40,000 e dell'ETH sia $2,000
     current_prices = {"BTC": 40000.0, "ETH": 2000.0}
