@@ -1,4 +1,5 @@
 class Transaction:
+
     def __init__(self, transaction_id, symbol, order_type, price, quantity, timestamp, status, fee, platform, additional_info=None):
         """
         Initialize a new transaction.

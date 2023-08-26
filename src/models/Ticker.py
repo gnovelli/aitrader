@@ -1,4 +1,5 @@
 class Ticker:
+
     def __init__(self, data):
         """
         Initialize a new Ticker instance.
