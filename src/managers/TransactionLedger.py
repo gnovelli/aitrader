@@ -3,6 +3,7 @@ from managers.PortfolioManager import PortfolioManager
 
 class TransactionLedger:
     def __init__(self, initial_cash_balance=0):
+        self.initial_cash_balance=initial_cash_balance
         self.transactions = []
         self.cash_balance = initial_cash_balance
         self.total_fees = 0
@@ -57,7 +58,8 @@ class TransactionLedger:
             "crypto_balances": self.crypto_balance
         }
 
-    def translate_ledger_to_portfolio(self, portfolio_manager):
+    def translate_ledger_to_portfolio(self):
+        portfolio_manager=PortfolioManager(initial_cash=self.initial_cash_balance)
         for transaction in self.get_all_transactions():
             if transaction.order_type in ["BUY", "LIMIT_BUY"]:
                 portfolio_manager.remove_cash(transaction.price * transaction.quantity + transaction.fee)
@@ -85,8 +87,7 @@ if __name__ == "__main__":
     print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
     for symbol, quantity in details['crypto_balances'].items():
         print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager = PortfolioManager(initial_cash=1000000)
-    portfolio_manager=ledger.translate_ledger_to_portfolio(portfolio_manager)
+    portfolio_manager=ledger.translate_ledger_to_portfolio()
     portfolio_manager.print_portfolio()
 
     # Transazione 2: Acquisto di 2 ETH a 3000 ciascuno
@@ -100,8 +101,7 @@ if __name__ == "__main__":
     print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
     for symbol, quantity in details['crypto_balances'].items():
         print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager = PortfolioManager(initial_cash=1000000)
-    portfolio_manager=ledger.translate_ledger_to_portfolio(portfolio_manager)
+    portfolio_manager=ledger.translate_ledger_to_portfolio()
     portfolio_manager.print_portfolio()
 
     # Transazione 3: Vendita di 0.2 BTC a 52000 ciascuno
@@ -115,8 +115,7 @@ if __name__ == "__main__":
     print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
     for symbol, quantity in details['crypto_balances'].items():
         print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager = PortfolioManager(initial_cash=1000000)
-    portfolio_manager=ledger.translate_ledger_to_portfolio(portfolio_manager)
+    portfolio_manager=ledger.translate_ledger_to_portfolio()
     portfolio_manager.print_portfolio()
 
 
