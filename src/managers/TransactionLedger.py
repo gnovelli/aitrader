@@ -1,16 +1,17 @@
 from models.Transaction import Transaction
 from managers.PortfolioManager import PortfolioManager
 
+
 class TransactionLedger:
     def __init__(self, initial_cash_balance=0):
-        self.initial_cash_balance=initial_cash_balance
+        self.initial_cash_balance = initial_cash_balance
         self.transactions = []
         self.cash_balance = initial_cash_balance
         self.total_fees = 0
         self.total_spent_on_crypto = 0
         self.crypto_balance = {}
 
-    def add_transaction(self, transaction):
+    def add_transaction(self, transaction, debug=False):
         if isinstance(transaction, Transaction):
             self.transactions.append(transaction)
 
@@ -29,6 +30,16 @@ class TransactionLedger:
 
         else:
             raise ValueError("The provided object is not an instance of the Transaction class.")
+        if debug:
+            print(f"Dopo la transazione 1: {transaction}")
+            details = self.get_cash_details()
+            print(f"Current Cash Balance: {details['current_cash_balance']}")
+            print(f"Total Fees Spent: {details['total_fees_spent']}")
+            print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
+            for symbol, quantity in details['crypto_balances'].items():
+                print(f"Quantity of {symbol}: {quantity}")
+            portfolio_manager = self.translate_ledger_to_portfolio()
+            portfolio_manager.print_portfolio()
 
     def get_all_transactions(self):
         return self.transactions
@@ -59,7 +70,7 @@ class TransactionLedger:
         }
 
     def translate_ledger_to_portfolio(self):
-        portfolio_manager=PortfolioManager(initial_cash=self.initial_cash_balance)
+        portfolio_manager = PortfolioManager(initial_cash=self.initial_cash_balance)
         for transaction in self.get_all_transactions():
             if transaction.order_type in ["BUY", "LIMIT_BUY"]:
                 portfolio_manager.remove_cash(transaction.price * transaction.quantity + transaction.fee)
@@ -72,6 +83,7 @@ class TransactionLedger:
                 portfolio_manager.add_fee(transaction.fee)
         return portfolio_manager
 
+
 if __name__ == "__main__":
     # Inizializzazione del ledger con un bilancio cash di 10.000
     ledger = TransactionLedger(initial_cash_balance=1000000)
@@ -79,43 +91,14 @@ if __name__ == "__main__":
     # Transazione 1: Acquisto di 0.5 BTC a 50000 ciascuno
     transaction1 = Transaction(transaction_id="T001", symbol="BTCUSDT", order_type="BUY", price=50000, quantity=0.5,
                                timestamp="2023-08-26 10:00:00", status="FILLED", fee=10, platform="Binance")
-    ledger.add_transaction(transaction1)
-    print(f"Dopo la transazione 1: {transaction1}")
-    details = ledger.get_cash_details()
-    print(f"Current Cash Balance: {details['current_cash_balance']}")
-    print(f"Total Fees Spent: {details['total_fees_spent']}")
-    print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
-    for symbol, quantity in details['crypto_balances'].items():
-        print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager=ledger.translate_ledger_to_portfolio()
-    portfolio_manager.print_portfolio()
+    ledger.add_transaction(transaction1, debug=True)
 
     # Transazione 2: Acquisto di 2 ETH a 3000 ciascuno
     transaction2 = Transaction(transaction_id="T002", symbol="ETHUSDT", order_type="BUY", price=3000, quantity=2,
                                timestamp="2023-08-26 11:00:00", status="FILLED", fee=5, platform="Binance")
-    ledger.add_transaction(transaction2)
-    print(f"Dopo la transazione 2: {transaction2}")
-    details = ledger.get_cash_details()
-    print(f"Current Cash Balance: {details['current_cash_balance']}")
-    print(f"Total Fees Spent: {details['total_fees_spent']}")
-    print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
-    for symbol, quantity in details['crypto_balances'].items():
-        print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager=ledger.translate_ledger_to_portfolio()
-    portfolio_manager.print_portfolio()
+    ledger.add_transaction(transaction2, debug=True)
 
     # Transazione 3: Vendita di 0.2 BTC a 52000 ciascuno
     transaction3 = Transaction(transaction_id="T003", symbol="BTCUSDT", order_type="SELL", price=52000, quantity=0.2,
                                timestamp="2023-08-26 12:00:00", status="FILLED", fee=8, platform="Binance")
-    ledger.add_transaction(transaction3)
-    print(f"Dopo la transazione 3: {transaction3}")
-    details = ledger.get_cash_details()
-    print(f"Current Cash Balance: {details['current_cash_balance']}")
-    print(f"Total Fees Spent: {details['total_fees_spent']}")
-    print(f"Total Spent on Crypto: {details['total_spent_on_crypto']}")
-    for symbol, quantity in details['crypto_balances'].items():
-        print(f"Quantity of {symbol}: {quantity}")
-    portfolio_manager=ledger.translate_ledger_to_portfolio()
-    portfolio_manager.print_portfolio()
-
-
+    ledger.add_transaction(transaction3, debug=True)
